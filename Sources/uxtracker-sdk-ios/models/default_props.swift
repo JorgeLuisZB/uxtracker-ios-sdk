@@ -22,8 +22,8 @@ struct DefaultProperties {
         let appVersion = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
         let appBuild = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "Unknown"
         
-        let countryCode = Locale.current.regionCode ?? "unknown"
-        let country = Locale.current.localizedString(forRegionCode: countryCode) ?? "unknown"
+        let countryCode = locale.regionCode ?? "unknown"
+        let country = locale.localizedString(forRegionCode: countryCode) ?? "unknown"
         
         return [
             "distinctid": distinctId,
