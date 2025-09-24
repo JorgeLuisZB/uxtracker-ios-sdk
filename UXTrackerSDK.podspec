@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'UXTrackerSDK'
-  s.version          = '0.0.1'
+  s.version          = 'v0.0.1'
   s.summary          = 'UXTracker SDK for iOS.'
   s.description      = 'A Swift SDK for tracking UX metrics in iOS applications.'
   s.homepage         = 'https://github.com/JorgeLuisZB/uxtracker-ios-sdk'
