@@ -2,8 +2,9 @@ import Foundation
 import UIKit
 
 @available(iOS 16, *)
+@MainActor
 public class UXTracker {
-    @MainActor public static let shared = UXTracker()
+    public static let shared = UXTracker()
     
     private var eventQueue: EventQueue = EventQueue()
     private var eventDispatcher: EventDispatcher = EventDispatcher()
@@ -28,7 +29,7 @@ public class UXTracker {
         }
     }
     
-    @MainActor public func track(eventName: String, userProperties: [String: Any] = [:]) {
+    public func track(eventName: String, userProperties: [String: Any] = [:]) {
         let defaultProperties = DefaultProperties.collect(sessionId: self.sessionId, distinctId: self.distinctId!)
             
         let event = Event(
@@ -43,7 +44,7 @@ public class UXTracker {
         eventQueue.enqueue(event)
     }
     
-    @MainActor public func identify(userId: String) {
+    public func identify(userId: String) {
         let anonymousId = self.distinctId ?? ""
         self.distinctId = userId
         
@@ -61,13 +62,19 @@ public class UXTracker {
             defaultProperties: defaultProperties,
             userProperties: userProperties
         )
-        eventQueue.enqueue(event)
         
-        identiesController.identifyUser(event: event)
+        eventDispatcher.flush(eventQueue: eventQueue) { [weak self] in
+            Task { @MainActor in
+                guard let self = self else { return }
+                
+                self.identiesController.identifyUser(event: event)
+                self.eventQueue.enqueue(event)
+            }
+        }
     }
     
-    public func flush() {
-        eventDispatcher.flush(eventQueue: eventQueue)
+    public func flush(completion: (@Sendable() -> Void)? = nil) {
+        eventDispatcher.flush(eventQueue: eventQueue, completion: completion)
     }
     
     public func reset() {

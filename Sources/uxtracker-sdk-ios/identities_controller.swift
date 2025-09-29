@@ -7,7 +7,7 @@
 import Foundation
 
 @available(iOS 16.0, *)
-final class IdentitiesController {
+final class IdentitiesController: Sendable {
     
     private let session: URLSession
     

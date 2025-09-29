@@ -12,7 +12,7 @@ enum EventType: String, Codable {
     case identify
 }
 
-struct Event: Codable {
+struct Event: Codable, Sendable {
     let type: EventType
     let event: String
     let defaultProperties: [String: AnyCodable]
@@ -28,7 +28,7 @@ struct Event: Codable {
     init(type: EventType, event: String, defaultProperties: [String: Any] = [:], userProperties: [String: Any] = [:]) {
         self.type = type
         self.event = event
-        self.defaultProperties = defaultProperties.mapValues { AnyCodable($0) }
-        self.userProperties = userProperties.mapValues { AnyCodable($0) }
+        self.defaultProperties = defaultProperties.compactMapValues { AnyCodable.safeWrap($0) }
+        self.userProperties = userProperties.compactMapValues { AnyCodable.safeWrap($0) }
     }
 }

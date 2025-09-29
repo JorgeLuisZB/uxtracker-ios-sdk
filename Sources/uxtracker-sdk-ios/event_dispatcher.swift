@@ -36,26 +36,31 @@ final class EventDispatcher {
         flushTimer = nil
     }
     
-    public func flush(eventQueue: EventQueue) {
+    public func flush(eventQueue: EventQueue, completion: (@Sendable() -> Void)? = nil) {
         let eventBatch = eventQueue.dequeueBatch(max: self.uxTrackerSetup.batchSize)
 
-        guard !eventBatch.isEmpty else { return }
+        guard !eventBatch.isEmpty else {
+                completion?()
+                return
+            }
         
         let path = "/events/track/batch"
         guard let url = URL(string: path, relativeTo: Constants.URL_BASE) else {
             print("Error: Invalid URL for path \(path)")
+            completion?()
             return
         }
         
         do {
             let payload = try JSONEncoder().encode(eventBatch)
-            self.send(payload: payload, to: url)
+            self.send(payload: payload, to: url, completion: completion)
         } catch {
             print("Encoding error for batch: \(error)")
+            completion?()
         }
     }
     
-    private func send(payload: Data, to url: URL) {
+    private func send(payload: Data, to url: URL, completion: (@Sendable() -> Void)? = nil) {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -67,6 +72,7 @@ final class EventDispatcher {
             } else {
                 print("Successfully sent data to \(url), response: \(String(describing: response))")
             }
+            completion?()
         }.resume()
     }
 }
